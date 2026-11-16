@@ -1,0 +1,16 @@
+export const rawSpain = {
+  name: 'Spain',
+  nativeName: 'España',
+  alpha2Code: 'ES',
+  alpha3Code: 'ESP',
+  capital: 'Madrid',
+  region: 'Europe',
+  subregion: 'Southern Europe',
+  population: 47351567,
+  area: 505992,
+  flags: { svg: 'https://flagcdn.com/es.svg', png: 'https://flagcdn.com/w320/es.png' },
+  languages: [{ name: 'Spanish', nativeName: 'Español', iso639_1: 'es' }],
+  currencies: [{ code: 'EUR', name: 'Euro', symbol: '€' }],
+  borders: ['AND', 'FRA', 'GIB', 'PRT', 'MAR'],
+  timezones: ['UTC+01:00'],
+};
