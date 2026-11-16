@@ -6,7 +6,7 @@ TypeScript, Fetch API, AbortController, собственный debounce, Vitest.
 
 ## Демо
 
-[Открыть приложение](https://country-search-atlas-daniyal.grassy-pike-7162.chatgpt.site) — приватный деплой Sites, доступен владельцу. Для Cross-Check нужен публичный деплой или разрешённый доступ проверяющих.
+[Открыть приложение](https://country-search-atlas-daniyal.grassy-pike-7162.chatgpt.site) — публичный сайт, доступен без входа в аккаунт.
 
 ## Запуск
 
