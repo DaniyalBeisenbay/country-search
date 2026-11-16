@@ -2,7 +2,7 @@
 
 1. Task: https://github.com/rolling-scopes-school/tasks/blob/master/fullstack-engineering/tasks/country-search/README.md
 2. Screenshot: ![Country Search](docs/preview.jpg)
-3. Deploy: будет добавлен после завершения публикации. Перед сдачей проверьте, что ссылка доступна проверяющим.
+3. Deploy: https://country-search-atlas-daniyal.grassy-pike-7162.chatgpt.site — приватное демо. Перед сдачей нужен публичный доступ проверяющих или отдельный публичный хостинг.
 4. Done: 16.11.2026. Deadline: указать дату из расписания курса.
 5. Реализованы все базовые критерии (145 баллов) и бонусы: кэш/дедупликация (+6), история (+4). Итоговая самооценка после проверки публичного деплоя и оформления PR.
 
