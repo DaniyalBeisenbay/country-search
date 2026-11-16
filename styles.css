@@ -298,8 +298,9 @@ h2 {
   box-shadow: 0 12px 32px #173d3510;
 }
 .flag-wrap {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #ebeee4;
   height: 170px;
   padding: 28px;
@@ -634,4 +635,15 @@ body:has(dialog[open]) {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.flag-wrap .flag {
+  display: block;
+  height: 114px;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
 }

@@ -28,7 +28,7 @@ export function mapCountryResponse(raw: RawCountry): Country {
     borders: [...(raw.borders || [])],
     timezones: [...(raw.timezones || [])],
     description: [
-      raw.name,
+      `${raw.name}.`,
       raw.region ? `Регион: ${raw.region}.` : '',
       raw.subregion ? `Часть света: ${raw.subregion}.` : '',
       raw.capital ? `Столица: ${raw.capital}.` : '',
