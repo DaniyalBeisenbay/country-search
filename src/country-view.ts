@@ -1,19 +1,8 @@
 import { button, el } from './dom.js';
 import type { Country } from './types.js';
 
-const numbers = new Intl.NumberFormat('ru-RU');
-const format = (value: number | null) => (value === null ? 'Нет данных' : numbers.format(value));
-const regions: Record<string, string> = {
-  Africa: 'Африка',
-  Americas: 'Америка',
-  Asia: 'Азия',
-  Europe: 'Европа',
-  Oceania: 'Океания',
-  Antarctic: 'Антарктика',
-  Polar: 'Полярный регион',
-  'Antarctic Ocean': 'Антарктика',
-};
-const regionName = (region: string) => regions[region] || region;
+const numbers = new Intl.NumberFormat('en-US');
+const format = (value: number | null) => (value === null ? 'Not available' : numbers.format(value));
 
 function flag(country: Country): HTMLElement {
   const wrap = el('div', 'flag-wrap');
@@ -28,7 +17,7 @@ function flag(country: Country): HTMLElement {
   if (country.flag.startsWith('https://')) {
     const image = el('img', 'flag');
     image.src = country.flag;
-    image.alt = `Флаг страны ${country.name}`;
+    image.alt = `Flag of ${country.name}`;
     image.loading = 'lazy';
     image.addEventListener('load', () => {
       fallback.hidden = true;
@@ -47,16 +36,13 @@ export function countryCard(country: Country, open: (country: Country) => void):
   const article = el('article');
   article.setAttribute('role', 'listitem');
   const card = button('country-card', '', () => open(country));
-  card.setAttribute('aria-label', `Подробнее о стране ${country.name}`);
+  card.setAttribute('aria-label', `Explore ${country.name}`);
   const body = el('div', 'card-body');
-  body.append(
-    el('span', 'region', regionName(country.region)),
-    el('strong', 'country-name', country.name),
-  );
+  body.append(el('span', 'region', country.region), el('strong', 'country-name', country.name));
   const facts = el('div', 'card-facts');
   for (const [label, value] of [
-    ['Столица', country.capital],
-    ['Население', format(country.population)],
+    ['Capital', country.capital],
+    ['Population', format(country.population)],
   ]) {
     const row = el('div', 'fact');
     row.append(el('span', 'fact-label', label), el('span', 'fact-value', value));
@@ -64,7 +50,7 @@ export function countryCard(country: Country, open: (country: Country) => void):
   }
   body.append(facts);
   const footer = el('div', 'card-footer');
-  footer.append(el('span', '', 'Узнать о стране'), el('span', '', '↗'));
+  footer.append(el('span', '', 'Explore country'), el('span', '', '↗'));
   card.append(flag(country), body, footer);
   article.append(card);
   return article;
@@ -100,27 +86,27 @@ export function createCountryDialog(): {
       const image = flag(country);
       image.className = '';
       const close = button('close-detail', '×', () => dialog.close());
-      close.setAttribute('aria-label', 'Закрыть подробности');
+      close.setAttribute('aria-label', 'Close country details');
       header.append(image, close);
       const content = el('div', 'detail-content');
       const title = el('h2', '', country.name);
       title.id = 'country-title';
       content.append(
-        el('span', 'region', regionName(country.region)),
+        el('span', 'region', country.region),
         title,
         el('p', 'native-name', country.nativeName),
         el('p', 'description', country.description),
       );
       const facts = el('dl', 'detail-facts');
       const entries = [
-        ['Столица', country.capital],
-        ['Население', format(country.population)],
-        ['Площадь', country.area === null ? 'Нет данных' : `${format(country.area)} км²`],
-        ['Субрегион', country.subregion],
-        ['Языки', country.languages.join(', ') || 'Нет данных'],
-        ['Валюта', country.currencies.join(', ') || 'Нет данных'],
-        ['Границы · коды ISO alpha-3', country.borders.join(', ') || 'Нет сухопутных границ'],
-        ['Часовые пояса', country.timezones.join(', ') || 'Нет данных'],
+        ['Capital', country.capital],
+        ['Population', format(country.population)],
+        ['Area', country.area === null ? 'Not available' : `${format(country.area)} km²`],
+        ['Subregion', country.subregion],
+        ['Languages', country.languages.join(', ') || 'Not available'],
+        ['Currency', country.currencies.join(', ') || 'Not available'],
+        ['Borders · ISO alpha-3 codes', country.borders.join(', ') || 'No land borders'],
+        ['Time zones', country.timezones.join(', ') || 'Not available'],
       ];
       for (const [label, value] of entries) {
         const group = el('div');
@@ -132,7 +118,7 @@ export function createCountryDialog(): {
         el(
           'p',
           'detail-note',
-          'Источник: countries.dev. Сведения приведены по данным API и могут отличаться от актуальной статистики. Описание составлено из полей ответа.',
+          'Source: countries.dev. API data may differ from current statistics. The description is generated from the returned fields.',
         ),
       );
       dialog.replaceChildren(header, content);

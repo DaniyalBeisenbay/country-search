@@ -1,50 +1,50 @@
-# Архитектура Country Search
+# Country Search architecture
 
-## Отмена и защита от гонки
+## Cancellation and request races
 
-`SearchController.setQuery` (`src/search-controller.ts`) вызывается на **каждом** событии `input`. Сначала он отменяет отложенный вызов debounce и вызывает `abort()` активного контроллера. Только потом публикует новое состояние и планирует следующий поиск. Поэтому старый ответ не может появиться даже в течение 300 мс ожидания нового запроса. Очистка поля отменяет и таймер, и активную сеть.
+`SearchController.setQuery` in `src/search-controller.ts` runs on **every input event**. It cancels the scheduled debounce and aborts the active controller before publishing a new state or scheduling another search. This prevents an older result from appearing during the 300 ms debounce gap. Clearing input cancels both pending timers and the active network request.
 
-`searchCountries` (`src/api.ts`) действительно передаёт сигнал в `fetch`. Применён ручной эквивалент `AbortSignal.any`: собственный контроллер слушает сигнал вызывающего кода, а отдельный таймер через 10 секунд отменяет его с причиной `DOMException(..., 'TimeoutError')`. При отмене вызывающим кодом передаётся исходная причина (`AbortError`). В `finally` очищаются таймер и обработчик события. Такая связка не требует поддержки `AbortSignal.any` браузером.
+`searchCountries` in `src/api.ts` passes a real signal to `fetch`. It uses a manual equivalent of `AbortSignal.any`: an owned controller forwards the caller's abort reason, while a separate 10-second timer aborts with `DOMException(..., 'TimeoutError')`. Caller cancellation normally carries `AbortError`. The `finally` block clears the timer and removes the listener. This composition does not require browser support for `AbortSignal.any`.
 
-После `await` контроллер дополнительно проверяет `signal.throwIfAborted()`, чтобы закрыть промежуток между завершением Promise и преобразованием данных. Проверка не подменяет реальную отмену: сетевой запрос получает `abort()` сразу при вводе. Сравнение контроллеров в `finally` нужно лишь для того, чтобы завершившийся старый запрос не очистил ссылку на уже запущенный новый.
+After `await`, `signal.throwIfAborted()` also protects the microtask between Promise resolution and mapping. It complements actual transport cancellation; it does not replace it. The controller comparison in `finally` prevents an older request from clearing the reference to a newer active request.
 
-`src/errors.ts` различает отмену, таймаут, `HttpError` и сетевую/неожиданную ошибку. `AbortError` не показывается пользователю; таймаут, прочие HTTP-ошибки и проблемы сети показываются с повтором. HTTP 404 превращается в `[]` ещё в API-слое, поэтому до обработки ошибок не доходит. Проверка `response.ok` обязательна: сам `fetch` не отклоняет Promise из-за HTTP 500. `retry()` отменяет pending debounce и повторяет текущий `state.query` немедленно.
+`src/errors.ts` distinguishes cancellation, timeout, `HttpError`, and network or unexpected errors. Caller cancellation is silent. Timeout and genuine failures show a message with retry. The API converts HTTP 404 into `[]`, so it becomes the empty state rather than an error. Other non-success statuses throw `HttpError` with the status. Checking `response.ok` is essential because fetch does not reject merely because a response is HTTP 500. `retry()` cancels pending work and immediately searches the latest `state.query`.
 
-## Почему debounce — 300 мс
+## Why a 300 ms debounce
 
-Задержка реализована самостоятельно в `src/debounce.ts`. 300 мс обычно позволяет закончить несколько последовательных нажатий, но не создаёт заметного ожидания после остановки ввода. Без debounce почти каждая буква вызывает сеть и отменяет предыдущую работу. При задержке 1–2 секунды интерфейс кажется медленным. Выбор подсказки, истории и отправка формы запускают поиск сразу.
+The handwritten function in `src/debounce.ts` resets its timer whenever called and exposes cancellation. A 300 ms delay combines several consecutive keystrokes without making the interface feel slow. Removing it creates a request for nearly every letter. Increasing it to one or two seconds makes the interface feel unresponsive. Suggestions, history, and explicit form submission bypass the delay.
 
-## Кэш и независимая отмена подписчиков
+## Cache and independent subscribers
 
-`createCachedSearch` (`src/cache.ts`) нормализует ключ через `trim().toLowerCase()`. Успешные ответы, включая пустые массивы, помещаются в ограниченный LRU-кэш на 30 записей. Ошибки и отмены не кэшируются. Кэш живёт до перезагрузки страницы: это экономит запросы, но не хранит сведения о странах постоянно.
+`createCachedSearch` in `src/cache.ts` normalizes keys with `trim().toLowerCase()`. Successful responses, including empty arrays, enter a bounded 30-entry LRU cache. Errors and aborted responses are never cached. The cache lasts until page reload.
 
-Одинаковые параллельные поиски используют один внутренний Promise и один сетевой контроллер. Каждый вызывающий получает отдельный Promise и слушатель собственного сигнала. Отмена одного подписчика отклоняет только его Promise. Последний уходящий подписчик сразу отменяет общий fetch и удаляет запись из in-flight Map, чтобы новый вызов мог начать свежий запрос. Завершение старого Promise удаляет запись только если она всё ещё указывает на него.
+Concurrent equal queries share an internal Promise and network controller. Each caller receives a separate Promise and listens to its own abort signal. Cancelling one subscriber rejects only that caller's Promise. When the last subscriber leaves, the shared fetch is aborted synchronously and its in-flight entry is removed, allowing a new call to start a fresh request. Cleanup removes an entry only if it still refers to the same request.
 
-## История
+## History
 
-`SearchHistory` (`src/history.ts`) хранит до восьми успешных запросов в `localStorage`, убирает дубликаты без учёта регистра и проверяет прочитанный JSON. Невалидные элементы пропускаются. При недоступном хранилище или переполнении квоты приложение продолжает работать с историей в памяти. По клику запрос повторяется немедленно и может использовать кэш.
+`SearchHistory` in `src/history.ts` stores the eight latest successful queries. It removes case-insensitive duplicates and validates JSON loaded from localStorage. Invalid entries are ignored. If storage is inaccessible, corrupted, or full, the application continues with in-memory history. Selecting history searches immediately and can reuse the cache.
 
-## Сложность
+## Complexity
 
-- `mapCountryResponse`: время и дополнительная память **O(L + C + B + T)**, где L — число языков, C — валют, B — границ, T — часовых поясов. Учитывая длины текстов, нужно добавить суммарное число символов. Массивы копируются; исходный ответ не мутируется.
-- Поиск ключа кэша/in-flight, обновление порядка LRU и удаление самой старой записи: в среднем **O(1)** для операций `Map`; нормализация ключа — **O(q)** по длине запроса. Получение кэшированного ответа не копирует массив стран. Маппер создаёт отдельные модели карточек.
-- Регистрация/отмена одного подписчика: **O(1)**; доставка ответа S подписчикам: **O(S)**. Сетевой результат в кэше хранится один раз.
-- Память кэша ограничена 30 ответами; объём одного ответа зависит от числа совпадений. In-flight память зависит от одновременно активных ключей и подписчиков.
-- История ограничена восемью элементами, поэтому операции ограничены константой; в общем виде для H записей поиск/удаление дубликата занимает **O(H)**.
+- `mapCountryResponse`: **O(L + C + B + T)** time and extra space for languages, currencies, borders, and time zones. Accounting for text processing also adds the total string length. Output arrays are independent and input data is never mutated.
+- Cache/in-flight lookup, LRU reordering, and eviction use average **O(1)** Map operations. Key normalization costs **O(q)** for query length. Cache hits return the shared raw array; the mapper creates independent display models.
+- Registering or cancelling one subscriber costs **O(1)**; delivering a shared response to S subscribers costs **O(S)**.
+- Cache storage is bounded to 30 responses, with response size depending on the number of matches. In-flight memory depends on active keys and subscribers.
+- History operations are bounded by eight entries; for a general H-entry history, duplicate detection and filtering cost **O(H)**.
 
-## Чистый код и границы модулей
+## Clean code and module boundaries
 
-- Единственная ответственность: `api.ts` работает с HTTP и сроком ожидания; `mapper.ts` преобразует данные; `search-controller.ts` управляет состояниями; `country-view.ts` строит карточки и диалог.
-- Внедрение зависимостей: контроллер принимает `SearchFunction`, кэш принимает транспорт, история принимает интерфейс хранилища. Тесты не зависят от DOM, интернета или настоящего localStorage.
-- Чистота: `mapCountryResponse` не вызывает сеть, не обращается к DOM и не изменяет входные данные.
-- Явные имена и константы: `DEBOUNCE_MS`, `REQUEST_TIMEOUT_MS`, `HISTORY_LIMIT`; ошибки содержат отличимые типы и HTTP-статус.
-- Безопасное создание DOM: `src/dom.ts`, `country-view.ts`, `main.ts` используют `createElement`, `textContent`, `append` и `replaceChildren`. Динамические строки не интерпретируются как HTML.
-- Доступность: подпись поля, `aria-live` для состояния, нативный `dialog` с Escape и возвратом фокуса, кнопки с понятными именами, видимый фокус и reduced-motion.
+- Single responsibility: `api.ts` owns HTTP and deadlines, `mapper.ts` transforms data, `search-controller.ts` manages lifecycle states, and `country-view.ts` renders cards and details.
+- Dependency injection: the controller accepts a search function, the cache accepts a transport, and history accepts a storage interface. Tests require neither a DOM nor the internet.
+- Pure mapping: `mapCountryResponse` has no network or DOM effects and does not mutate its input.
+- Explicit names and constants: `DEBOUNCE_MS`, `REQUEST_TIMEOUT_MS`, and `HISTORY_LIMIT` make timing and capacity decisions visible.
+- Safe DOM construction: `dom.ts`, `country-view.ts`, and `main.ts` use `createElement`, `textContent`, `append`, and `replaceChildren`; dynamic content is never parsed as HTML.
+- Accessibility: an input label, live status announcements, a native dialog with Escape and focus restoration, descriptive button names, visible focus, and reduced-motion styles.
 
-## Проверки и ограничения данных
+## Verification and data limitations
 
-39 независимых тестов Vitest используют fake timers, фикстуры и мок `fetch`. Отдельный `tests/race.test.ts` планирует ответ раннего запроса после позднего, реагирует на `signal.abort`, проверяет отмену синхронно до следующего debounce и отсутствие устаревшего результата. Дополнительно покрыты очистка поля, dispose, кэш, дедупликация и отказы хранилища.
+The 39 Vitest tests use fixtures, fake timers, and mocked fetch. The separate race test schedules the earlier response after the later one, rejects on signal abort, checks cancellation synchronously before the next debounce, and verifies that only the latest result survives. Tests also cover clearing, disposal, cache eviction, deduplication, independent subscribers, and storage failures.
 
-API `countries.dev` возвращает название и столицу строками, языки и валюты массивами. Данные отображаются как получены; например, старое название столицы в API не заменяется выдуманным актуальным значением. Развёрнутое энциклопедическое описание API не предоставляет: текст подробностей составляется из названия, региона, субрегиона и столицы. Пустой список границ отображается как отсутствие сухопутных границ; сами соседи указаны кодами ISO alpha-3.
+The countries.dev schema uses string names and capitals and arrays of language and currency objects. Values are displayed as returned, even when a record contains an older capital name or historical population. The API has no encyclopedia-style description; detail text is generated from name, region, subregion, and capital. Borders are shown as ISO alpha-3 codes; an empty border list is displayed as no land borders.
 
-Минимальное окружение: Node.js 22.12+ и современный браузер с Fetch API, AbortController и HTMLDialogElement. Сборка — `tsc` в ES-модули; Vite используется только для локального сервера, сборку не выполняет.
+The interface and documentation are in English, using `en-US` number formatting. Native country names remain proper names supplied by the API. Minimum tooling is Node.js 22.12+ and a modern browser with Fetch, AbortController, and HTMLDialogElement. Production compilation uses `tsc` ES modules; Vite is only the local development server. The primary deployment is GitHub Pages.

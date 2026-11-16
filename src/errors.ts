@@ -10,7 +10,10 @@ export function classifyError(error: unknown): SearchFailure | null {
   const name = typeof error === 'object' && error !== null && 'name' in error ? error.name : '';
   if (name === 'AbortError') return null;
   if (name === 'TimeoutError') {
-    return { kind: 'timeout', message: 'Сервер не ответил за 10 секунд. Попробуйте ещё раз.' };
+    return {
+      kind: 'timeout',
+      message: 'The server did not respond within 10 seconds. Please try again.',
+    };
   }
   if (error instanceof HttpError) {
     return {
@@ -18,12 +21,12 @@ export function classifyError(error: unknown): SearchFailure | null {
       status: error.status,
       message:
         error.status === 429
-          ? 'Слишком много запросов. Подождите немного и повторите поиск.'
-          : `Сервис стран временно недоступен (HTTP ${error.status}). Попробуйте ещё раз.`,
+          ? 'Too many requests. Wait a moment and try again.'
+          : `The country service is temporarily unavailable (HTTP ${error.status}). Please try again.`,
     };
   }
   return {
     kind: 'network',
-    message: 'Не удалось загрузить страны. Проверьте подключение к интернету и повторите поиск.',
+    message: 'Could not load countries. Check your internet connection and try again.',
   };
 }

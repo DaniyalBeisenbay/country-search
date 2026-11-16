@@ -1,44 +1,44 @@
 # Country Search
 
 1. Task: https://github.com/rolling-scopes-school/tasks/blob/master/fullstack-engineering/tasks/country-search/README.md
-2. Screenshot: ![Country Search](docs/preview.jpg)
-3. Deploy: https://country-search-atlas-daniyal.grassy-pike-7162.chatgpt.site — публичный сайт, доступен без входа в аккаунт.
-4. Done: 16.11.2026. Deadline: указать дату из расписания курса.
-5. Реализованы все базовые критерии (145 баллов) и бонусы: кэш/дедупликация (+6), история (+4). Итоговая самооценка после проверки публичного деплоя и оформления PR.
+2. Screenshot: ![Country Search](https://raw.githubusercontent.com/DaniyalBeisenbay/country-search/country-search/docs/preview.jpg)
+3. Deploy: https://daniyalbeisenbay.github.io/country-search/
+4. Done: **16.11.2026** / Deadline: **17.11.2026**.
+5. Self-assessment: **155/155** for the implemented criteria: project setup 15, TDD/tests 30, asynchronous architecture 55, DESIGN.md 20, interface/behavior 25, cache/deduplication 6, history 4. Remaining manual deployment checks are listed below.
 
-## Реализация
+## Implementation
 
-Поиск с debounce 300 мс, отмена активного запроса на каждом изменении ввода, таймаут 10 секунд с отдельным TimeoutError, HTTP 404 как пустой результат, HttpError для других HTTP-ошибок, повтор последнего запроса. Карточки и подробности страны, адаптивная разметка, кэш и история.
+English interface and documentation. Live country search with a 300 ms debounce, immediate request cancellation on every input change, a 10-second TimeoutError deadline, HTTP 404 as no matches, HttpError for other non-success responses, and retry of the latest query. Responsive cards and an accessible details dialog. Bounded LRU cache, shared in-flight requests with independent caller cancellation, and localStorage history.
 
-## Проверки
+The application is hosted on **GitHub Pages**. The repository and deployment are public. The PR remains open and unmerged.
 
-- `npm test` — 39 тестов.
-- `npm run lint` — ESLint и Prettier.
-- `npm run build` — строгая проверка TypeScript и сборка ES-модулей.
-- Порядок тесты → реализация: [TDD.md](TDD.md), отдельная пара коммитов для каждой обязательной функции.
-- Тест гонки запросов: отдельный коммит `378305c`; мок fetch реагирует на AbortSignal и отклоняет Promise с AbortError.
-- Архитектурное обоснование: [DESIGN.md](DESIGN.md).
+## Validation
 
-## Чек-лист поведения
+- `npm test`: 39 passing tests.
+- `npm run lint`: ESLint and Prettier.
+- `npm run build`: strict TypeScript compilation to ES modules.
+- Test-first commit pairs: [TDD.md](https://github.com/DaniyalBeisenbay/country-search/blob/country-search/TDD.md).
+- Separate request-race test: commit `378305c`. Its fetch mock rejects with AbortError when its signal is aborted and schedules the earlier response after the later one.
+- Architecture and complexity: [DESIGN.md](https://github.com/DaniyalBeisenbay/country-search/blob/country-search/DESIGN.md).
 
-Отмечено только то, что действительно проверено. Для строк с автоматической проверкой перед сдачей требуется также ручная проверка на публичном деплое.
+## Behavior checklist
 
-- [x] Пустое поле не вызывает запрос, список очищается — тесты API, контроллера и гонки.
-- [x] Во время запроса виден индикатор загрузки — проверено в локальном браузере.
-- [x] Быстрый ввод не отображает устаревший ответ — отдельный тест гонки с инверсией порядка ответов.
-- [ ] В Network tab запрос виден как canceled/aborted — проверить на деплое с throttling.
-- [x] Собственная отмена не показывается как ошибка — тесты контроллера и гонки.
-- [x] Отсутствие совпадений отображается дружелюбным сообщением — проверено в браузере запросом `zzzz-no-country`.
-- [x] Ошибки и retry последнего запроса — проверены моками HTTP 500, сети и таймаута.
-- [ ] Ручная проверка отключения сети и кнопки «Повторить» на публичном деплое.
-- [x] Клик по карточке открывает подробности — проверено в браузере на Japan.
-- [x] Мобильная раскладка — проверена при ширине 390 px.
-- [x] Кэш, дедупликация и независимая отмена подписчиков — покрыты тестами.
-- [x] История и повтор по клику — тесты плюс локальная проверка в браузере.
-- [x] Ссылка на деплой доступна без входа в аккаунт автора — проверено анонимным HTTP-запросом (200 OK).
+Items distinguish automated evidence from manual browser verification. The two unchecked DevTools checks remain for final manual review.
 
-## Сдача
+- [x] Empty input makes no requests and clears results: API, controller, and race tests.
+- [x] A loading indicator appears during a request: browser verification.
+- [x] Fast input cannot display an outdated result: inverted response-order race test with real signal cancellation.
+- [ ] Verify canceled/aborted requests in the Network panel under throttling on the deployment.
+- [x] Caller cancellation never appears as an error: controller and race tests.
+- [x] A search with no matches displays a friendly empty state: browser verification using `zzzz-no-country`.
+- [x] Genuine HTTP, network, and timeout errors offer retry of the latest query: mocked error tests.
+- [ ] Manually disconnect the network and verify the Retry button on the deployment.
+- [x] Clicking a card opens country details: browser verification with Japan.
+- [x] Responsive layout: browser verification at a 390 px width.
+- [x] Cache, deduplication, and independent subscriber cancellation: unit tests.
+- [x] History and immediate repeated search: unit tests and browser verification.
+- [x] Public deployment is available without signing in.
 
-Локальная ветка `country-search` ответвлена от `main`, в которой только README и `.gitignore`. По выбору автора для публикации использовать публичный личный GitHub-репозиторий. Отправить обе ветки с сохранением истории, открыть PR `country-search → main`, не мержить. Затем отправить URL PR в RS App → Cross-Check: Submit.
+## Submission
 
-При переносе описания в GitHub прикрепите `docs/preview.jpg` как изображение или замените путь на URL raw-файла ветки `country-search`.
+Implementation is on `country-search`; `main` contains only README and `.gitignore`. `gh-pages` contains deployment assets. The repository is public at the author's request. Preserve the TDD commits, leave this PR unmerged, and submit its URL through RS App → Cross-Check: Submit.

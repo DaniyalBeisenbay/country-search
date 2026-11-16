@@ -1,6 +1,6 @@
 import type { Country, RawCountry } from './types.js';
 
-const missing = 'Нет данных';
+const missing = 'Not available';
 const nonnegative = (value: number | undefined): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
@@ -29,9 +29,9 @@ export function mapCountryResponse(raw: RawCountry): Country {
     timezones: [...(raw.timezones || [])],
     description: [
       `${raw.name}.`,
-      raw.region ? `Регион: ${raw.region}.` : '',
-      raw.subregion ? `Часть света: ${raw.subregion}.` : '',
-      raw.capital ? `Столица: ${raw.capital}.` : '',
+      raw.region ? `Region: ${raw.region}.` : '',
+      raw.subregion ? `Subregion: ${raw.subregion}.` : '',
+      raw.capital ? `Capital: ${raw.capital}.` : '',
     ]
       .filter(Boolean)
       .join(' '),

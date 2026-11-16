@@ -1,61 +1,66 @@
-# Атлас — Country Search
+# Atlas — Country Search
 
-Приложение для живого поиска стран по [заданию RS School](https://github.com/rolling-scopes-school/tasks/blob/master/fullstack-engineering/tasks/country-search/README.md).
+A live country search application for the [RS School assignment](https://github.com/rolling-scopes-school/tasks/blob/master/fullstack-engineering/tasks/country-search/README.md).
 
-TypeScript, Fetch API, AbortController, собственный debounce, Vitest. Вся разметка создаётся программно без `innerHTML`. Серверная часть и API-ключи не нужны.
+[Live demo](https://daniyalbeisenbay.github.io/country-search/) · [Pull request](https://github.com/DaniyalBeisenbay/country-search/pull/1)
 
-## Демо
+**Completed:** 16.11.2026 · **Deadline:** 17.11.2026
 
-[Открыть приложение](https://country-search-atlas-daniyal.grassy-pike-7162.chatgpt.site) — публичный сайт, доступен без входа в аккаунт.
+TypeScript, Fetch API, AbortController, a handwritten debounce, and Vitest. The entire interface is created programmatically without `innerHTML`. No backend or API keys are required.
 
-## Запуск
+## Run locally
 
-Нужен Node.js **22.12+**.
+Requires **Node.js 22.12+**.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Откройте адрес из терминала, обычно [http://127.0.0.1:5173](http://127.0.0.1:5173).
+Open the address printed in the terminal, usually [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
-Названия стран вводятся **на английском**, например `Kazakhstan`, `Japan`, `united`. При пустом поле запросы не отправляются. Подсказки и история запускают поиск немедленно; обычный ввод — через 300 мс после последнего изменения.
+Search using English country names, such as `Kazakhstan`, `Japan`, or `united`. Empty input never triggers a request. Suggestions, history, and form submission search immediately; typing uses a 300 ms debounce.
 
-`npm run dev` предварительно собирает приложение и раздаёт `dist`. После изменений TypeScript выполните `npm run build` в другом терминале или перезапустите `npm run dev`. Стили и HTML тоже копируются при сборке.
+The development command builds and serves `dist`. After changing TypeScript, HTML, or CSS, run `npm run build` in another terminal or restart `npm run dev`.
 
-## Команды
+## Commands
 
 ```sh
-npm test          # 39 тестов, включая отмену, таймаут и гонку
-npm run lint      # ESLint + проверка Prettier
-npm run format    # форматирование
-npm run build     # tsc + копирование HTML/CSS в dist
+npm test          # 39 tests, including cancellation, timeout, and the request race
+npm run lint      # ESLint and Prettier validation
+npm run format    # Format the project
+npm run build     # Compile ES modules with tsc and copy HTML/CSS into dist
 npm run test:watch
 ```
 
-Рабочий сайт — содержимое `dist/`. Его можно разместить на любом статическом хостинге; относительные пути поддерживают размещение в подкаталоге GitHub Pages.
+## Features
 
-## Возможности
+- Live country search using `https://countries.dev/name/{query}`.
+- Immediate cancellation on every input change, before the next debounce expires.
+- Distinct idle, waiting, loading, results, empty, and error states.
+- HTTP 404 means no matches; other HTTP errors and the 10-second timeout offer a retry of the latest query.
+- Cards with flags, capitals, regions, and population; an accessible dialog with country details.
+- A bounded LRU cache and in-flight deduplication with independent subscriber cancellation.
+- The eight most recent successful queries stored in localStorage.
+- Responsive layouts, keyboard access, visible focus, and reduced-motion support.
 
-- Поиск по `https://countries.dev/name/{query}` и отмена запроса сразу при изменении поля.
-- Различимые состояния ожидания ввода, загрузки, результатов, отсутствия совпадений и ошибок.
-- HTTP 404 — пустой результат; таймаут 10 секунд и прочие ошибки — сообщение с повтором последнего запроса.
-- Карточки с флагом, столицей, регионом и населением; подробности в доступном диалоге.
-- Ограниченный LRU-кэш и дедупликация одинаковых запросов с независимой отменой подписчиков.
-- История последних восьми успешных запросов в localStorage.
-- Адаптивная раскладка и поддержка клавиатуры.
+## Documentation
 
-## Документация
+- [DESIGN.md](DESIGN.md): cancellation, debounce rationale, complexity, and clean code decisions.
+- [TDD.md](TDD.md): separate failing-test and implementation commits.
+- [PR_DESCRIPTION.md](PR_DESCRIPTION.md): submission details and verification checklist.
+- [Screenshot](docs/preview.jpg).
 
-- [DESIGN.md](DESIGN.md) — архитектура, отмена, debounce, Big O, принципы чистого кода.
-- [TDD.md](TDD.md) — пары коммитов «тесты → реализация».
-- [PR_DESCRIPTION.md](PR_DESCRIPTION.md) — заготовка описания Pull Request и чек-лист сдачи.
-- [Скриншот](docs/preview.jpg).
+The Husky pre-commit hook runs **only lint-staged** (ESLint and Prettier). The pre-push hook runs `npm test`. Failing TDD commits can be recorded locally, but the final pushed state must pass tests.
 
-Husky: `pre-commit` выполняет **только lint-staged** (ESLint и Prettier); `pre-push` запускает `npm test`. Красные TDD-коммиты разрешены локально, но отправлять ветку можно лишь после зелёной реализации.
+The repository is public by the author's choice. `main` contains only README and `.gitignore`; the application is on `country-search`. Keep the complete TDD history and leave the pull request unmerged.
 
-Локальный Git-репозиторий изолирован от соседних проектов. Ветка `main` содержит только README и `.gitignore`; реализация находится в `country-search`. При сдаче историю нужно отправить целиком, без squash.
+## Deployment
 
-## Данные
+The primary deployment is GitHub Pages at [daniyalbeisenbay.github.io/country-search](https://daniyalbeisenbay.github.io/country-search/). The `gh-pages` branch contains the compiled contents of `dist` and `.nojekyll`. GitHub Pages publishes that branch from its root. Relative asset URLs support the repository subpath.
 
-Источник — [countries.dev](https://countries.dev), географические сведения — [GeoNames](https://www.geonames.org/) (CC BY 4.0), флаги — URL из ответа API. Данные могут быть историческими. Описание в подробностях сформировано из доступных полей, а не взято из энциклопедии.
+To update the deployed application, run the checks and build, then publish the contents of `dist` to `gh-pages`. Source code and the assignment PR remain on `country-search`; generated files are not committed to that branch.
+
+## Data
+
+Country data comes from [countries.dev](https://countries.dev), geographic data from [GeoNames](https://www.geonames.org/) (CC BY 4.0), and flags from URLs supplied by the API. Some records may be historical. Detail descriptions are generated from returned fields rather than an encyclopedia.

@@ -1,15 +1,15 @@
 1. Task: https://github.com/rolling-scopes-school/tasks/blob/master/fullstack-engineering/tasks/country-search/README.md
-2. Screenshot: прикрепить docs/preview.jpg
-3. Deploy: вставить доступный проверяющим URL
-4. Done / deadline: указать даты
-5. Score: указать после самопроверки
+2. Screenshot: attach docs/preview.jpg
+3. Deploy: https://daniyalbeisenbay.github.io/country-search/
+4. Done: 16.11.2026 / Deadline: 17.11.2026
+5. Score: complete after self-review
 
-Подробное готовое описание: `PR_DESCRIPTION.md` в ветке country-search.
+See `PR_DESCRIPTION.md` on the country-search branch for the full submission description.
 
 - [ ] `npm test`
 - [ ] `npm run lint`
 - [ ] `npm run build`
-- [ ] Сохранён TDD-порядок коммитов (см. TDD.md)
-- [ ] Добавлена ссылка на DESIGN.md
-- [ ] Пройден ручной чек-лист на деплое
-- [ ] PR из country-search в main, без merge
+- [ ] Preserve test-first commit order (see TDD.md)
+- [ ] Link DESIGN.md
+- [ ] Complete the deployment behavior checklist
+- [ ] Open country-search → main without merging

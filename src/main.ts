@@ -16,46 +16,50 @@ const history = createHistory();
 const shell = el('div', 'shell');
 const header = el('header', 'header');
 const brand = el('div', 'brand');
-brand.append(el('span', 'brand-mark', '◎'), el('span', '', 'атлас'));
-header.append(brand, el('span', 'header-note', 'Маленькое окно в большой мир'));
+brand.append(el('span', 'brand-mark', '◎'), el('span', '', 'atlas'));
+header.append(brand, el('span', 'header-note', 'A little window to the world'));
 
 const main = el('main');
 const hero = el('section', 'hero');
 hero.setAttribute('aria-labelledby', 'hero-title');
 const intro = el('div');
 const eyebrow = el('div', 'eyebrow');
-eyebrow.append(el('span', 'dot'), el('span', '', 'География начинается с любопытства'));
+eyebrow.append(el('span', 'dot'), el('span', '', 'Every journey starts with curiosity'));
 const heading = el('h1');
 heading.id = 'hero-title';
-heading.append(document.createTextNode('Мир ближе,'), el('br'), el('em', '', 'чем кажется.'));
+heading.append(
+  document.createTextNode('The world is closer'),
+  el('br'),
+  el('em', '', 'than you think.'),
+);
 intro.append(
   eyebrow,
   heading,
   el(
     'p',
     'hero-copy',
-    'От знакомых столиц до далёких островов. Найдите страну и узнайте о ней чуть больше.',
+    'From familiar capitals to faraway islands. Find a country and discover a little more.',
   ),
 );
 const illustration = el('div', 'globe-scene');
 illustration.setAttribute('aria-hidden', 'true');
 illustration.append(
   globe(),
-  el('span', 'globe-label', 'ОДНА ПЛАНЕТА · ТЫСЯЧИ ОТКРЫТИЙ'),
+  el('span', 'globe-label', 'ONE PLANET · ENDLESS DISCOVERIES'),
   el('span', 'globe-caption', '48° N / 68° E'),
 );
 hero.append(intro, illustration);
 
 const searchArea = el('section', 'search-area');
-searchArea.setAttribute('aria-label', 'Поиск стран');
+searchArea.setAttribute('aria-label', 'Country search');
 const form = el('form', 'search-form');
 form.setAttribute('role', 'search');
-const label = el('label', 'sr-only', 'Название страны на английском');
+const label = el('label', 'sr-only', 'Country name in English');
 label.htmlFor = 'country-search';
 const input = el('input', 'search-input');
 input.id = 'country-search';
 input.type = 'search';
-input.placeholder = 'Какую страну вы хотите открыть?';
+input.placeholder = 'Where would you like to explore?';
 input.autocomplete = 'off';
 input.spellcheck = false;
 input.maxLength = 80;
@@ -67,21 +71,21 @@ const clear = button('clear', '×', () => {
   input.focus();
 });
 clear.hidden = true;
-clear.setAttribute('aria-label', 'Очистить поиск');
+clear.setAttribute('aria-label', 'Clear search');
 form.append(label, searchIcon(), input, clear);
 const hint = el(
   'p',
   'search-hint',
-  'Введите название на английском — например, Kazakhstan. Поиск начнётся автоматически.',
+  'Enter a country name in English, such as Kazakhstan. Results appear as you type.',
 );
 hint.id = 'search-hint';
 const suggestions = el('div', 'suggestions');
-suggestions.append(el('span', 'suggestions-label', 'Начните с небольшого путешествия:'));
+suggestions.append(el('span', 'suggestions-label', 'Start with a little inspiration:'));
 for (const [name, query] of [
-  ['🇰🇿 Казахстан', 'Kazakhstan'],
-  ['🇯🇵 Япония', 'Japan'],
-  ['🇮🇹 Италия', 'Italy'],
-  ['🇧🇷 Бразилия', 'Brazil'],
+  ['🇰🇿 Kazakhstan', 'Kazakhstan'],
+  ['🇯🇵 Japan', 'Japan'],
+  ['🇮🇹 Italy', 'Italy'],
+  ['🇧🇷 Brazil', 'Brazil'],
 ]) {
   suggestions.append(button('chip', name || '', () => chooseQuery(query || '')));
 }
@@ -91,9 +95,9 @@ searchArea.append(form, hint, suggestions, historyArea);
 const resultsSection = el('section', 'results-section');
 resultsSection.setAttribute('aria-labelledby', 'results-heading');
 const resultsHeader = el('div', 'results-header');
-const resultsTitle = el('h2', '', 'Ваше следующее открытие');
+const resultsTitle = el('h2', '', 'Your next discovery');
 resultsTitle.id = 'results-heading';
-const count = el('span', 'results-count', 'Начните с поиска');
+const count = el('span', 'results-count', 'Start exploring');
 resultsHeader.append(resultsTitle, count);
 const announcement = el('p', 'sr-only');
 announcement.setAttribute('role', 'status');
@@ -105,15 +109,15 @@ resultsSection.append(resultsHeader, announcement, results);
 main.append(hero, searchArea, resultsSection);
 
 const footer = el('footer', 'footer');
-footer.append(el('span', '', 'С любопытством к миру. Атлас стран.'));
+footer.append(el('span', '', 'Stay curious. Explore with Atlas.'));
 const credit = el('div', 'footer-credit');
 credit.append(
-  document.createTextNode('Данные: '),
+  document.createTextNode('Data: '),
   link('countries.dev', 'https://countries.dev'),
   document.createTextNode(' · '),
   link('GeoNames (CC BY 4.0)', 'https://www.geonames.org/'),
   el('br'),
-  document.createTextNode('Учебный проект · RS School'),
+  document.createTextNode('Learning project · RS School'),
 );
 footer.append(credit);
 const detail = createCountryDialog();
@@ -141,12 +145,12 @@ function chooseQuery(query: string): void {
 function renderHistory(): void {
   historyArea.replaceChildren();
   if (!history.items.length) return;
-  historyArea.append(el('span', 'suggestions-label', 'Вы искали:'));
+  historyArea.append(el('span', 'suggestions-label', 'Recent searches:'));
   for (const query of history.items) {
     historyArea.append(button('chip', query, () => chooseQuery(query)));
   }
   historyArea.append(
-    button('text-button', 'Очистить историю', () => {
+    button('text-button', 'Clear history', () => {
       history.clear();
       renderHistory();
       input.focus();
@@ -161,7 +165,7 @@ function statePanel(icon: string, title: string, message: string, isError = fals
   panel.append(decoration, el('h3', '', title), el('p', '', message));
   if (isError)
     panel.append(
-      button('primary-button', 'Повторить', () => {
+      button('primary-button', 'Retry', () => {
         input.focus();
         app.retry();
       }),
@@ -174,45 +178,44 @@ function renderState(state: SearchState): void {
   results.replaceChildren();
   results.setAttribute('aria-busy', String(state.status === 'loading'));
   count.textContent = '';
-  resultsTitle.textContent = state.query
-    ? `Результаты поиска «${state.query}»`
-    : 'Ваше следующее открытие';
+  resultsTitle.textContent = state.query ? `Results for “${state.query}”` : 'Your next discovery';
   let status = '';
   if (state.status === 'success') {
-    count.textContent = `Найдено: ${state.countries.length}`;
+    count.textContent = `Found: ${state.countries.length}`;
     results.append(...state.countries.map((country) => countryCard(country, detail.open)));
     history.remember(state.query);
     renderHistory();
-    status = `Найдено стран: ${state.countries.length}`;
+    status = `Countries found: ${state.countries.length}`;
   } else if (state.status === 'waiting' || state.status === 'loading') {
-    status = state.status === 'waiting' ? 'Ожидаем завершения ввода…' : 'Ищем страны…';
-    const panel = statePanel('', status, 'Ещё немного — и можно отправляться в путешествие.');
+    status =
+      state.status === 'waiting' ? 'Waiting for you to finish typing…' : 'Searching for countries…';
+    const panel = statePanel('', status, 'Just a moment. Your next discovery is on its way.');
     panel.querySelector('.state-icon')?.replaceChildren(el('span', 'spinner'));
     results.append(panel);
   } else if (state.status === 'empty') {
-    status = 'Пока ничего не нашлось';
+    status = 'No countries found';
     results.append(
       statePanel(
         '⌕',
         status,
-        'Попробуйте другое название или проверьте написание. Названия стран нужно вводить на английском.',
+        'Try another name or check your spelling. Search using country names in English.',
       ),
     );
-    count.textContent = 'Найдено: 0';
+    count.textContent = 'Found: 0';
   } else if (state.status === 'error') {
     status =
       state.error?.kind === 'timeout'
-        ? 'Поиск занял слишком много времени'
-        : 'Не удалось продолжить путешествие';
-    results.append(statePanel('!', status, state.error?.message || 'Попробуйте ещё раз.', true));
+        ? 'The search took too long'
+        : 'We could not load your next discovery';
+    results.append(statePanel('!', status, state.error?.message || 'Please try again.', true));
   } else {
-    status = 'Какое место вас вдохновляет?';
-    count.textContent = 'Начните с поиска';
+    status = 'Where will curiosity take you?';
+    count.textContent = 'Start exploring';
     results.append(
       statePanel(
         '◎',
         status,
-        'Введите название страны выше. Здесь появятся флаги, столицы и маленькие поводы узнать мир лучше.',
+        'Search for a country above. Discover its flag, capital, and a few more reasons to explore.',
       ),
     );
   }

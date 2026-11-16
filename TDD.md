@@ -1,26 +1,26 @@
-# Порядок TDD-коммитов
+# TDD commit history
 
-Для каждого обязательного модуля сначала был создан тест, выполнен `npm test` с красным результатом из-за отсутствующего модуля и сделан отдельный `test:` коммит. Только после этого написана реализация, проверен зелёный результат и создан `feat:` коммит. Тесты не используют реальную сеть или DOM.
+Each required module began with tests, an observed failing run because the module did not yet exist, and a separate `test:` commit. Only then was the implementation written, verified green, and recorded in a `feat:` commit. Tests do not use a real network or DOM.
 
-| Обязательная функция / логика                                                            | Падающие тесты | Зелёная реализация |
-| ---------------------------------------------------------------------------------------- | -------------- | ------------------ |
-| debounce                                                                                 | `d4d0de0`      | `438e377`          |
-| searchCountries / HttpError / 404 / транспортная отмена / таймаут                        | `6df92b7`      | `13d65bd`          |
-| mapCountryResponse                                                                       | `7afdcea`      | `a8227c4`          |
-| Различение AbortError / TimeoutError / HttpError / пустого результата, состояния и retry | `80a9adf`      | `2339ed6`          |
+| Required function / behavior                                                     | Failing tests | Passing implementation |
+| -------------------------------------------------------------------------------- | ------------- | ---------------------- |
+| debounce                                                                         | `d4d0de0`     | `438e377`              |
+| searchCountries, HttpError, 404, transport cancellation, timeout                 | `6df92b7`     | `13d65bd`              |
+| mapCountryResponse                                                               | `7afdcea`     | `a8227c4`              |
+| AbortError / TimeoutError / HttpError / empty-result distinctions, states, retry | `80a9adf`     | `2339ed6`              |
 
-После базовой логики отдельным коммитом `378305c` добавлен тест самой гонки запросов. Он использует настоящий API-модуль поверх мока fetch, который отклоняет Promise при abort, и проверяет отмену ещё до следующего debounce. Таймер раннего ответа срабатывает после позднего; на экране остаётся только последний результат.
+After the base logic was covered, commit `378305c` added the request race test separately. It exercises the real API module with a fetch mock that rejects when aborted. Cancellation is asserted before the next debounce. The earlier response timer fires after the later one, and only the latest result remains.
 
-Дополнительные пары:
+Additional test-first pairs:
 
-| Бонус                            | Тесты     | Реализация |
-| -------------------------------- | --------- | ---------- |
-| LRU-кэш и независимые подписчики | `b1a6c27` | `2abe3e6`  |
-| История и отказы localStorage    | `b9a8030` | `8f278af`  |
+| Bonus                                 | Tests     | Implementation |
+| ------------------------------------- | --------- | -------------- |
+| LRU cache and independent subscribers | `b1a6c27` | `2abe3e6`      |
+| History and localStorage failures     | `b9a8030` | `8f278af`      |
 
-Начальная настройка `d6d8aeb` проверена с пустым набором тестов: `--passWithNoTests` разрешает такой запуск. В рабочей ветке присутствуют 39 зелёных тестов.
+Initial setup `d6d8aeb` was checked with no tests using `--passWithNoTests`. The completed branch has 39 passing tests. Later English-interface and hosting updates preserve the original commit history.
 
-Проверить порядок:
+Verify the sequence with:
 
 ```sh
 git log --reverse --oneline
